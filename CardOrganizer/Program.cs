@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.VisualBasic.FileIO;
 
 namespace CardOrganizer
 {
@@ -30,13 +29,15 @@ namespace CardOrganizer
             Console.WriteLine();
 
             var searchOption = args.SearchSubfolders ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
-            var files = Directory.EnumerateFiles(args.TargetFolder, "*", searchOption).Where(x => x.EndsWith(".png", StringComparison.OrdinalIgnoreCase)).ToList();
+            var pngFiles = Directory.EnumerateFiles(args.TargetFolder, "*", searchOption).Where(x => x.EndsWith(".png", StringComparison.OrdinalIgnoreCase)).ToList();
 
-            if(files.Count > 0)
+            if(pngFiles.Count > 0)
             {
-                foreach(var file in files)
+                var filesToMove = Enumerable.Empty<object>().Select(x => new { source = "", destination = "" }).ToList();
+
+                foreach(var filepath in pngFiles)
                 {
-                    var fileString = File.ReadAllText(file, Encoding.UTF8);
+                    var fileString = File.ReadAllText(filepath, Encoding.UTF8);
                     var tokenData = TokenData.CardData.Find(fileString).LastOrDefault();
 
                     if(tokenData != null)
@@ -45,20 +46,30 @@ namespace CardOrganizer
                         {
                             var substring = fileString.Substring(tokenData.Item2);
                             var index = TokenData.SexData.Find(substring).First().Item2;
-                            var testsub = substring.Substring(index);
                             var sexChar = substring[index + 1];
                             var sex = BitConverter.GetBytes(sexChar)[0];
                             var folder = sex == 0 ? CardConstants.MaleCategory : CardConstants.FemaleCategory;
 
-                            var newPath = Path.Combine(tokenData.Item1.Folder, folder, Path.GetFileName(file));
-                            FileMove(file, newPath, args, tokenData.Item1);
+                            var dest = Path.Combine(tokenData.Item1.Folder, folder, Path.GetFileName(filepath));
+                            filesToMove.Add(new { source = filepath, destination = dest });
                         }
                         else
                         {
-                            var newPath = Path.Combine(tokenData.Item1.Folder, Path.GetFileName(file));
-                            FileMove(file, newPath, args, tokenData.Item1);
+                            var dest = Path.Combine(tokenData.Item1.Folder, Path.GetFileName(filepath));
+                            filesToMove.Add(new { source = filepath, destination = dest });
                         }
+
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"{Path.GetFileName(filepath)} = {tokenData.Item1.Token}");
+                        Console.ResetColor();
                     }
+                }
+
+                if(!args.TestRun && filesToMove.Count > 0)
+                {
+                    var sources = filesToMove.Select(x => x.source).ToList();
+                    var destinations = filesToMove.Select(x => IsFullPath(x.destination) ? x.destination : Path.Combine(args.TargetFolder, x.destination)).ToList();
+                    FileOperation.Move(sources, destinations);
                 }
             }
             else
@@ -81,31 +92,7 @@ namespace CardOrganizer
             Console.ReadKey();
             Environment.Exit(0);
         }
-
-        private static void FileMove(string srcFileName, string destFileName, Arguments args, TokenData tokenData)
-        {
-            if(!args.TestRun)
-            {
-                var fullPath = IsFullPath(destFileName) ? destFileName : Path.Combine(args.TargetFolder, destFileName);
-                Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
-
-                if(File.Exists(fullPath))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"{fullPath} already exists.");
-                    Console.ResetColor();
-                }
-                else
-                {
-                    File.Move(srcFileName, fullPath);
-                    //FileSystem.MoveFile(srcFileName, destFileName, false);
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"{Path.GetFileName(srcFileName)} = {tokenData.Token}");
-                    Console.ResetColor();
-                }
-            }
-        }
-
+        
         private static bool IsFullPath(string path)
         {
             return !string.IsNullOrWhiteSpace(path)
