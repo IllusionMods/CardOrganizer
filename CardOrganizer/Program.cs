@@ -59,8 +59,8 @@ namespace CardOrganizer
 
                         if(!IsFullPath(destination))
                             destination = Path.Combine(args.TargetFolder, destination);
-
-                        filesToMove.Add(new Tuple<string, string>(filepath, destination));
+                        
+                        filesToMove.Add(Tuple.Create(filepath, destination));
                         Console.WriteLine($"{Path.GetFileName(filepath)} = {tokenData.Item1.Token}");
                     }
                 }
