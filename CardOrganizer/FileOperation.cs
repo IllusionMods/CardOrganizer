@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace CardOrganizer
 {
     public static class FileOperation
     {
-        public static bool Move(List<string> sources, List<string> destinations)
+        public static bool Move(IEnumerable<Tuple<string, string>> files)
         {
             var sh = CreateBasicStruct();
             sh.wFunc = FO_Func.MOVE;
             sh.fFlags = FILEOP_FLAGS.MULTIDESTFILES | FILEOP_FLAGS.NOCONFIRMMKDIR;
-            sh.pFrom = NullTerminate(sources);
-            sh.pTo = NullTerminate(destinations);
+            sh.pFrom = NullTerminate(files.Select(x => x.Item1));
+            sh.pTo = NullTerminate(files.Select(x => x.Item2));
             return SHFileOperation(ref sh) == 0;
         }
 
@@ -26,7 +27,7 @@ namespace CardOrganizer
             };
         }
 
-        private static string NullTerminate(List<string> strings)
+        private static string NullTerminate(IEnumerable<string> strings)
         {
             char nullChar = '\0';
             return $"{string.Join(nullChar.ToString(), strings)}{nullChar}{nullChar}";
