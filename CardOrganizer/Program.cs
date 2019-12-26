@@ -29,11 +29,10 @@ namespace CardOrganizer
 
             var searchOption = args.SearchSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
             var pngFiles = Directory.EnumerateFiles(args.TargetFolder, "*", searchOption).Where(x => x.EndsWith(".png", StringComparison.OrdinalIgnoreCase)).ToList();
+            var filesToMove = new List<Tuple<string, string>>();
 
             if(pngFiles.Count > 0)
             {
-                var filesToMove = new List<Tuple<string, string>>();
-
                 foreach(var filepath in pngFiles)
                 {
                     var fileString = File.ReadAllText(filepath, Encoding.UTF8);
@@ -67,15 +66,12 @@ namespace CardOrganizer
 
                 if(!args.TestRun && filesToMove.Count > 0)
                     FileOperation.Move(filesToMove);
-
-                Console.WriteLine();
             }
-            else
-            {
+
+            if(filesToMove.Count == 0)
                 Console.WriteLine("No cards were found in the target folder.");
-                Console.WriteLine();
-            }
 
+            Console.WriteLine();
             Exit();
         }
 
