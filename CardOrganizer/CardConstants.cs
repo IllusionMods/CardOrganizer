@@ -13,6 +13,7 @@
         public const string FemaleCategory = "female";
         public const string MaleCategory = "male";
         public const string OutfitCategory = "outfit";
+        public const string HousingCategory = "housing";
         public const string Uncategorized = "uncategorized";
 
         public const string KoikatuSceneToken = "【KStudio】";
@@ -36,6 +37,9 @@
         public const string SexyBeachPremiumMaleToken = "PremiumResortCharaMale";
 
         public const string AICharaToken = "【AIS_Chara】";
+        public const string AISceneToken = "StudioNEOV2";
+        public const string AIHousingToken = "【AIS_Housing】";
+        public const string AIOutfitToken = "AIS_Clothes";
 
         public const string SexToken = "sex";
     }

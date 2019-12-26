@@ -37,6 +37,9 @@ namespace CardOrganizer
                     cardData.Add(CardConstants.HoneySelectMaleToken, new TokenData(CardConstants.HoneySelectMaleToken, CardType.Resolved, Config.Default.HoneySelectFolder, CardConstants.HoneySelectCategory, CardConstants.MaleCategory));
 
                     cardData.Add(CardConstants.AICharaToken, new TokenData(CardConstants.AICharaToken, CardType.UnknownSex, Config.Default.AISyoujyoFolder, CardConstants.AISyoujyoCategory, ""));
+                    cardData.Add(CardConstants.AIOutfitToken, new TokenData(CardConstants.AIOutfitToken, CardType.Resolved, Config.Default.AISyoujyoFolder, CardConstants.AISyoujyoCategory, CardConstants.OutfitCategory));
+                    cardData.Add(CardConstants.AISceneToken, new TokenData(CardConstants.AISceneToken, CardType.Resolved, Config.Default.AISyoujyoFolder, CardConstants.AISyoujyoCategory, CardConstants.SceneCategory));
+                    cardData.Add(CardConstants.AIHousingToken, new TokenData(CardConstants.AIHousingToken, CardType.Resolved, Config.Default.AISyoujyoFolder, CardConstants.AISyoujyoCategory, CardConstants.HousingCategory));
 
                     cardData.Add(CardConstants.SexyBeachPremiumFemaleToken, new TokenData(CardConstants.SexyBeachPremiumFemaleToken, CardType.Resolved, Config.Default.SexyBeachPremiumFolder, CardConstants.SexyBeachPremiumCategory, CardConstants.FemaleCategory));
                     cardData.Add(CardConstants.SexyBeachPremiumMaleToken, new TokenData(CardConstants.SexyBeachPremiumMaleToken, CardType.Resolved, Config.Default.SexyBeachPremiumFolder, CardConstants.SexyBeachPremiumCategory, CardConstants.MaleCategory));
