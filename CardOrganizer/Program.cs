@@ -67,13 +67,15 @@ namespace CardOrganizer
 
                 if(!args.TestRun && filesToMove.Count > 0)
                     FileOperation.Move(filesToMove);
+
+                Console.WriteLine();
             }
             else
             {
                 Console.WriteLine("No cards were found in the target folder.");
+                Console.WriteLine();
             }
 
-            Console.WriteLine();
             Exit();
         }
 
