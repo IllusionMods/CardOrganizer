@@ -1,18 +1,33 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace CardOrganizer
 {
     public class TokenData
     {
-        public CardType CardType { get; set; }
-        public string Folder { get; set; }
         public string Token { get; set; }
+        public CardType CardType { get; set; }
+        public Func<byte, string> GetFolder { get; set; }
 
-        public TokenData(string token, CardType cardType, string gameFolder, string gameCategory, string cardCategory)
+        public static TokenData CreateResolvedToken(string token, string folder, string gameCategory, string cardCategory)
         {
-            Token = token;
-            CardType = cardType;
-            Folder = Config.Default.UseCommonFolder ? Path.Combine(Config.Default.CommonFolder, gameCategory, cardCategory) : Path.Combine(gameFolder, cardCategory);
+            return new TokenData
+            {
+                Token = token,
+                CardType = CardType.Resolved,
+                GetFolder = (x) => Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(folder) ? Path.Combine(Config.Default.CommonFolder, gameCategory, cardCategory) : folder
+            };
+        }
+
+        public static TokenData CreateUnknownSexToken(string token, string gameCategory, string femaleFolder, string maleFolder)
+        {
+            return new TokenData
+            {
+                Token = token,
+                CardType = CardType.UnknownSex,
+                GetFolder = (x) => Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(femaleFolder) || string.IsNullOrWhiteSpace(maleFolder)
+                    ? Path.Combine(Config.Default.CommonFolder, gameCategory, x == 0 ? CardConstants.MaleCategory : CardConstants.FemaleCategory) : x == 0 ? maleFolder : femaleFolder
+            };
         }
 
         private static Trie<TokenData> cardData;
@@ -24,30 +39,30 @@ namespace CardOrganizer
                 {
                     cardData = new Trie<TokenData>();
 
-                    cardData.Add(CardConstants.KoikatuSceneToken, new TokenData(CardConstants.KoikatuSceneToken, CardType.Resolved, Config.Default.KoikatuFolder, CardConstants.KoikatuCategory, CardConstants.SceneCategory));
-                    cardData.Add(CardConstants.KoikatuCharaToken, new TokenData(CardConstants.KoikatuCharaToken, CardType.UnknownSex, Config.Default.KoikatuFolder, CardConstants.KoikatuCategory, ""));
-                    cardData.Add(CardConstants.KoikatuOutfitToken, new TokenData(CardConstants.KoikatuOutfitToken, CardType.Resolved, Config.Default.KoikatuFolder, CardConstants.KoikatuCategory, CardConstants.OutfitCategory));
+                    cardData.Add(CardConstants.KoikatuSceneToken, CreateResolvedToken(CardConstants.KoikatuSceneToken, Config.Default.KoikatuSceneFolder, CardConstants.KoikatuCategory, CardConstants.SceneCategory));
+                    cardData.Add(CardConstants.KoikatuCharaToken, CreateUnknownSexToken(CardConstants.KoikatuCharaToken, CardConstants.KoikatuCategory, Config.Default.KoikatuFemaleFolder, Config.Default.KoikatuMaleFolder));
+                    cardData.Add(CardConstants.KoikatuOutfitToken, CreateResolvedToken(CardConstants.KoikatuOutfitToken, Config.Default.KoikatuOutfitFolder, CardConstants.KoikatuCategory, CardConstants.OutfitCategory));
 
-                    cardData.Add(CardConstants.PlayHomeSceneToken, new TokenData(CardConstants.PlayHomeSceneToken, CardType.Resolved, Config.Default.PlayHomeFolder, CardConstants.PlayHomeCategory, CardConstants.SceneCategory));
-                    cardData.Add(CardConstants.PlayHomeFemaleToken, new TokenData(CardConstants.PlayHomeFemaleToken, CardType.Resolved, Config.Default.PlayHomeFolder, CardConstants.PlayHomeCategory, CardConstants.FemaleCategory));
-                    cardData.Add(CardConstants.PlayHomeMaleToken, new TokenData(CardConstants.PlayHomeMaleToken, CardType.Resolved, Config.Default.PlayHomeFolder, CardConstants.PlayHomeCategory, CardConstants.MaleCategory));
+                    cardData.Add(CardConstants.PlayHomeSceneToken, CreateResolvedToken(CardConstants.PlayHomeSceneToken, Config.Default.PlayHomeSceneFolder, CardConstants.PlayHomeCategory, CardConstants.SceneCategory));
+                    cardData.Add(CardConstants.PlayHomeFemaleToken, CreateResolvedToken(CardConstants.PlayHomeFemaleToken, Config.Default.PlayHomeFemaleFolder, CardConstants.PlayHomeCategory, CardConstants.FemaleCategory));
+                    cardData.Add(CardConstants.PlayHomeMaleToken, CreateResolvedToken(CardConstants.PlayHomeMaleToken, Config.Default.PlayHomeMaleFolder, CardConstants.PlayHomeCategory, CardConstants.MaleCategory));
 
-                    cardData.Add(CardConstants.HoneySelectSceneToken, new TokenData(CardConstants.HoneySelectSceneToken, CardType.Resolved, Config.Default.HoneySelectFolder, CardConstants.HoneySelectCategory, CardConstants.SceneCategory));
-                    cardData.Add(CardConstants.HoneySelectFemaleToken, new TokenData(CardConstants.HoneySelectFemaleToken, CardType.Resolved, Config.Default.HoneySelectFolder, CardConstants.HoneySelectCategory, CardConstants.FemaleCategory));
-                    cardData.Add(CardConstants.HoneySelectMaleToken, new TokenData(CardConstants.HoneySelectMaleToken, CardType.Resolved, Config.Default.HoneySelectFolder, CardConstants.HoneySelectCategory, CardConstants.MaleCategory));
+                    cardData.Add(CardConstants.HoneySelectSceneToken, CreateResolvedToken(CardConstants.HoneySelectSceneToken, Config.Default.HoneySelectSceneFolder, CardConstants.HoneySelectCategory, CardConstants.SceneCategory));
+                    cardData.Add(CardConstants.HoneySelectFemaleToken, CreateResolvedToken(CardConstants.HoneySelectFemaleToken, Config.Default.HoneySelectFemaleFolder, CardConstants.HoneySelectCategory, CardConstants.FemaleCategory));
+                    cardData.Add(CardConstants.HoneySelectMaleToken, CreateResolvedToken(CardConstants.HoneySelectMaleToken, Config.Default.HoneySelectMaleFolder, CardConstants.HoneySelectCategory, CardConstants.MaleCategory));
 
-                    cardData.Add(CardConstants.AICharaToken, new TokenData(CardConstants.AICharaToken, CardType.UnknownSex, Config.Default.AISyoujyoFolder, CardConstants.AISyoujyoCategory, ""));
-                    cardData.Add(CardConstants.AIOutfitToken, new TokenData(CardConstants.AIOutfitToken, CardType.Resolved, Config.Default.AISyoujyoFolder, CardConstants.AISyoujyoCategory, CardConstants.OutfitCategory));
-                    cardData.Add(CardConstants.AISceneToken, new TokenData(CardConstants.AISceneToken, CardType.Resolved, Config.Default.AISyoujyoFolder, CardConstants.AISyoujyoCategory, CardConstants.SceneCategory));
-                    cardData.Add(CardConstants.AIHousingToken, new TokenData(CardConstants.AIHousingToken, CardType.Resolved, Config.Default.AISyoujyoFolder, CardConstants.AISyoujyoCategory, CardConstants.HousingCategory));
+                    cardData.Add(CardConstants.AICharaToken, CreateUnknownSexToken(CardConstants.AICharaToken, CardConstants.AISyoujyoCategory, Config.Default.AIShoujoFemaleFolder, Config.Default.AIShoujoMaleFolder));
+                    cardData.Add(CardConstants.AIOutfitToken, CreateResolvedToken(CardConstants.AIOutfitToken, Config.Default.AIShoujoOutfitFolder, CardConstants.AISyoujyoCategory, CardConstants.OutfitCategory));
+                    cardData.Add(CardConstants.AISceneToken, CreateResolvedToken(CardConstants.AISceneToken, Config.Default.AIShoujoSceneFolder, CardConstants.AISyoujyoCategory, CardConstants.SceneCategory));
+                    cardData.Add(CardConstants.AIHousingToken, CreateResolvedToken(CardConstants.AIHousingToken, Config.Default.AIShoujoHousingFolder, CardConstants.AISyoujyoCategory, CardConstants.HousingCategory));
 
-                    cardData.Add(CardConstants.SexyBeachPremiumFemaleToken, new TokenData(CardConstants.SexyBeachPremiumFemaleToken, CardType.Resolved, Config.Default.SexyBeachPremiumFolder, CardConstants.SexyBeachPremiumCategory, CardConstants.FemaleCategory));
-                    cardData.Add(CardConstants.SexyBeachPremiumMaleToken, new TokenData(CardConstants.SexyBeachPremiumMaleToken, CardType.Resolved, Config.Default.SexyBeachPremiumFolder, CardConstants.SexyBeachPremiumCategory, CardConstants.MaleCategory));
+                    cardData.Add(CardConstants.SexyBeachPremiumFemaleToken, CreateResolvedToken(CardConstants.SexyBeachPremiumFemaleToken, Config.Default.SexyBeachPremiumFemaleFolder, CardConstants.SexyBeachPremiumCategory, CardConstants.FemaleCategory));
+                    cardData.Add(CardConstants.SexyBeachPremiumMaleToken, CreateResolvedToken(CardConstants.SexyBeachPremiumMaleToken, Config.Default.SexyBeachPremiumMaleFolder, CardConstants.SexyBeachPremiumCategory, CardConstants.MaleCategory));
 
-                    cardData.Add(CardConstants.EmotionCreatorsCharaToken, new TokenData(CardConstants.EmotionCreatorsCharaToken, CardType.UnknownSex, Config.Default.EmotionCreatorsFolder, CardConstants.EmotionCreatorsCategory, ""));
-                    cardData.Add(CardConstants.EmotionCreatorsHSceneToken, new TokenData(CardConstants.EmotionCreatorsHSceneToken, CardType.Resolved, Config.Default.EmotionCreatorsFolder, CardConstants.EmotionCreatorsCategory, CardConstants.Uncategorized));
-                    cardData.Add(CardConstants.EmotionCreatorsMapToken, new TokenData(CardConstants.EmotionCreatorsMapToken, CardType.Resolved, Config.Default.EmotionCreatorsFolder, CardConstants.EmotionCreatorsCategory, CardConstants.Uncategorized));
-                    cardData.Add(CardConstants.EmotionCreatorsPoseToken, new TokenData(CardConstants.EmotionCreatorsPoseToken, CardType.Resolved, Config.Default.EmotionCreatorsFolder, CardConstants.EmotionCreatorsCategory, CardConstants.Uncategorized));
+                    cardData.Add(CardConstants.EmotionCreatorsCharaToken, CreateUnknownSexToken(CardConstants.EmotionCreatorsCharaToken, CardConstants.EmotionCreatorsCategory, Config.Default.EmotionCreatorsFemaleFolder, Config.Default.EmotionCreatorsMaleFolder));
+                    cardData.Add(CardConstants.EmotionCreatorsHSceneToken, CreateResolvedToken(CardConstants.EmotionCreatorsHSceneToken, Config.Default.EmotionCreatorsHSceneFolder, CardConstants.EmotionCreatorsCategory, CardConstants.Uncategorized));
+                    cardData.Add(CardConstants.EmotionCreatorsMapToken, CreateResolvedToken(CardConstants.EmotionCreatorsMapToken, Config.Default.EmotionCreatorsMapFolder, CardConstants.EmotionCreatorsCategory, CardConstants.Uncategorized));
+                    cardData.Add(CardConstants.EmotionCreatorsPoseToken, CreateResolvedToken(CardConstants.EmotionCreatorsPoseToken, Config.Default.EmotionCreatorsPoseFolder, CardConstants.EmotionCreatorsCategory, CardConstants.Uncategorized));
 
                     cardData.Build();
                 }
