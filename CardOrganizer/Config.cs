@@ -7,7 +7,7 @@ namespace CardOrganizer
     internal class Config
     {
         private const string ConfigFile = "config.toml";
-        private const string MainFolder = "cardorganizer";
+        private const string DefaultFolder = "cardorganizer";
 
         private static Config _default;
         public static Config Default
@@ -40,36 +40,60 @@ namespace CardOrganizer
             }
         }
 
-        [TomlMember]
-        [TomlComment("Use a common folder for all the games. If this setting is true all the other folders are ignored.")]
+        [TomlMember, TomlComment("Use a common output folder for all the games. If this setting is true all the other folders are ignored.")]
         public bool UseCommonFolder { get; set; } = true;
 
-        [TomlMember]
-        [TomlComment("The folder used if UseCommonFolder is true.")]
-        public string CommonFolder { get; set; } = MainFolder;
+        [TomlMember, TomlComment("The folder used if UseCommonFolder is true.")]
+        public string CommonFolder { get; set; } = DefaultFolder;
 
+        [TomlMember, TomlComment("Koikatu folders")]
+        public string KoikatuFemaleFolder { get; set; } = "";
         [TomlMember]
-        [TomlComment("Koikatu cards will be moved to this folder. Supports relative paths.")]
-        public string KoikatuFolder { get; set; } = Path.Combine(MainFolder, CardConstants.KoikatuCategory);
+        public string KoikatuMaleFolder { get; set; } = "";
+        [TomlMember]
+        public string KoikatuSceneFolder { get; set; } = "";
+        [TomlMember]
+        public string KoikatuOutfitFolder { get; set; } = "";
 
+        [TomlMember, TomlComment("PlayHome folders")]
+        public string PlayHomeFemaleFolder { get; set; } = "";
         [TomlMember]
-        [TomlComment("Honey Select cards will be moved to this folder. Supports relative paths.")]
-        public string HoneySelectFolder { get; set; } = Path.Combine(MainFolder, CardConstants.HoneySelectCategory);
+        public string PlayHomeMaleFolder { get; set; } = "";
+        [TomlMember]
+        public string PlayHomeSceneFolder { get; set; } = "";
 
+        [TomlMember, TomlComment("Honey Select folders")]
+        public string HoneySelectSceneFolder { get; set; } = "";
         [TomlMember]
-        [TomlComment("PlayHome cards will be moved to this folder. Supports relative paths.")]
-        public string PlayHomeFolder { get; set; } = Path.Combine(MainFolder, CardConstants.PlayHomeCategory);
+        public string HoneySelectFemaleFolder { get; set; } = "";
+        [TomlMember]
+        public string HoneySelectMaleFolder { get; set; } = "";
 
+        [TomlMember, TomlComment("PlayHome folders")]
+        public string EmotionCreatorsFemaleFolder { get; set; } = "";
         [TomlMember]
-        [TomlComment("AI Syoujyo cards will be moved to this folder. Supports relative paths.")]
-        public string AISyoujyoFolder { get; set; } = Path.Combine(MainFolder, CardConstants.AISyoujyoCategory);
+        public string EmotionCreatorsMaleFolder { get; set; } = "";
+        [TomlMember]
+        public string EmotionCreatorsMapFolder { get; set; } = "";
+        [TomlMember]
+        public string EmotionCreatorsPoseFolder { get; set; } = "";
+        [TomlMember]
+        public string EmotionCreatorsHSceneFolder { get; set; } = "";
 
+        [TomlMember, TomlComment("Sexy Beach Premium Resort folders")]
+        public string SexyBeachPremiumFemaleFolder { get; set; } = "";
         [TomlMember]
-        [TomlComment("Sexy Beach Premium Resort cards will be moved to this folder. Supports relative paths.")]
-        public string SexyBeachPremiumFolder { get; set; } = Path.Combine(MainFolder, CardConstants.SexyBeachPremiumCategory);
+        public string SexyBeachPremiumMaleFolder { get; set; } = "";
 
+        [TomlMember, TomlComment("AI Shoujo folders")]
+        public string AIShoujoFemaleFolder { get; set; } = "";
         [TomlMember]
-        [TomlComment("Emotion Creators cards will be moved to this folder. Supports relative paths.")]
-        public string EmotionCreatorsFolder { get; set; } = Path.Combine(MainFolder, CardConstants.EmotionCreatorsCategory);
+        public string AIShoujoMaleFolder { get; set; } = "";
+        [TomlMember]
+        public string AIShoujoSceneFolder { get; set; } = "";
+        [TomlMember]
+        public string AIShoujoHousingFolder { get; set; } = "";
+        [TomlMember]
+        public string AIShoujoOutfitFolder { get; set; } = "";
     }
 }

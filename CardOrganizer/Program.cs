@@ -36,7 +36,7 @@ namespace CardOrganizer
                 foreach(var filepath in pngFiles)
                 {
                     var fileString = File.ReadAllText(filepath, Encoding.UTF8);
-                    var tokenData = TokenData.CardData.Find(fileString).LastOrDefault();
+                    var tokenData = TokenData.CardData.Find(fileString).LastOrDefault(); // Last has to be taken because scene token is last
 
                     if(tokenData != null)
                     {
@@ -48,12 +48,11 @@ namespace CardOrganizer
                             var index = TokenData.SexData.Find(substring).First().Item2;
                             var sexChar = substring[index + 1];
                             var sex = BitConverter.GetBytes(sexChar)[0];
-                            var folder = sex == 0 ? CardConstants.MaleCategory : CardConstants.FemaleCategory;
-                            destination = Path.Combine(tokenData.Item1.Folder, folder, Path.GetFileName(filepath));
+                            destination = Path.Combine(tokenData.Item1.GetFolder(sex), Path.GetFileName(filepath));
                         }
                         else
                         {
-                            destination = Path.Combine(tokenData.Item1.Folder, Path.GetFileName(filepath));
+                            destination = Path.Combine(tokenData.Item1.GetFolder(0), Path.GetFileName(filepath));
                         }
 
                         if(!IsFullPath(destination))
