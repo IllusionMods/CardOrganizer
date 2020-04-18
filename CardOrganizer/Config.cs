@@ -33,7 +33,7 @@ namespace CardOrganizer
                             Environment.Exit(0);
 
                         Console.WriteLine();
-                    } 
+                    }
                 }
 
                 return _default;

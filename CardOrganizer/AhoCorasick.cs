@@ -223,8 +223,8 @@ namespace CardOrganizer
             /// <returns>Child node.</returns>
             public Node<TNode, TNodeValue> this[TNode c]
             {
-                get { return _children.ContainsKey(c) ? _children[c] : null; }
-                set { _children[c] = value; }
+                get => _children.ContainsKey(c) ? _children[c] : null;
+                set => _children[c] = value;
             }
 
             /// <summary>
