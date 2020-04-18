@@ -40,20 +40,7 @@ namespace CardOrganizer
 
                     if(tokenData != null)
                     {
-                        string destination;
-
-                        if(tokenData.Item1.CardType == CardType.UnknownSex)
-                        {
-                            var substring = fileString.Substring(tokenData.Item2);
-                            var index = TokenData.SexData.Find(substring).First().Item2;
-                            var sexChar = substring[index + 1];
-                            var sex = BitConverter.GetBytes(sexChar)[0];
-                            destination = Path.Combine(tokenData.Item1.GetFolder(sex), Path.GetFileName(filepath));
-                        }
-                        else
-                        {
-                            destination = Path.Combine(tokenData.Item1.GetFolder(0), Path.GetFileName(filepath));
-                        }
+                        var destination = Path.Combine(tokenData.Item1.GetFolder(fileString, tokenData.Item2), Path.GetFileName(filepath));
 
                         if(!IsFullPath(destination))
                             destination = Path.Combine(args.TargetFolder, destination);
