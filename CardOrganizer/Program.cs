@@ -11,6 +11,12 @@ namespace CardOrganizer
     {
         private static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+            {
+                Console.WriteLine(e.ExceptionObject);
+                Exit();
+            };
+
             Parser.Default.ParseArguments<Arguments>(args).WithParsed(RunWithOptions);
         }
 
