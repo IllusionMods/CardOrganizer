@@ -1,21 +1,20 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace CardOrganizer
 {
     public class TokenData
     {
         public string Token { get; set; }
-        public CardType CardType { get; set; }
-        public Func<byte, string> GetFolder { get; set; }
+        public Func<string, int, string> GetFolder { get; set; }
 
         public static TokenData CreateResolvedToken(string token, string folder, string gameCategory, string cardCategory)
         {
             return new TokenData
             {
                 Token = token,
-                CardType = CardType.Resolved,
-                GetFolder = (x) => Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(folder) ? Path.Combine(Config.Default.CommonFolder, gameCategory, cardCategory) : folder
+                GetFolder = (fileString, startIndex) => Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(folder) ? Path.Combine(Config.Default.CommonFolder, gameCategory, cardCategory) : folder
             };
         }
 
@@ -24,9 +23,16 @@ namespace CardOrganizer
             return new TokenData
             {
                 Token = token,
-                CardType = CardType.UnknownSex,
-                GetFolder = (x) => Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(femaleFolder) || string.IsNullOrWhiteSpace(maleFolder)
-                    ? Path.Combine(Config.Default.CommonFolder, gameCategory, x == 0 ? CardConstants.MaleCategory : CardConstants.FemaleCategory) : x == 0 ? maleFolder : femaleFolder
+                GetFolder = (fileString, startIndex) =>
+                {
+                    var substring = fileString.Substring(startIndex);
+                    var index = SexData.Find(substring).First().Item2;
+                    var sexChar = substring[index + 1];
+                    var sex = BitConverter.GetBytes(sexChar)[0];
+
+                    var useCommon = Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(femaleFolder) || string.IsNullOrWhiteSpace(maleFolder);
+                    return useCommon ? Path.Combine(Config.Default.CommonFolder, gameCategory, sex == 0 ? CardConstants.MaleCategory : CardConstants.FemaleCategory) : sex == 0 ? maleFolder : femaleFolder;
+                }
             };
         }
 
