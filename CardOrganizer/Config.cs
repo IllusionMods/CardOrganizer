@@ -14,37 +14,50 @@ namespace CardOrganizer
         {
             get
             {
-                if(_default == null)
-                {
-                    if(File.Exists(ConfigFile))
-                    {
-                        _default = Toml.ReadFile<Config>(ConfigFile);
-                    }
-                    else
-                    {
-                        _default = new Config();
-                        Toml.WriteFile(_default, ConfigFile);
-
-                        Console.WriteLine("A new config file has been created.");
-                        Console.WriteLine("This program uses a TOML config file, any text editor should be able to edit it.");
-                        Console.WriteLine("Press ESC to quit and edit the config or press any other key to continue with the default config.");
-
-                        if(Console.ReadKey().Key == ConsoleKey.Escape)
-                            Environment.Exit(0);
-
-                        Console.WriteLine();
-                    }
-                }
-
+                Init();
                 return _default;
             }
         }
+
+        public static void Init()
+        {
+            if(_default == null)
+            {
+                if(File.Exists(ConfigFile))
+                {
+                    _default = Toml.ReadFile<Config>(ConfigFile);
+                }
+                else
+                {
+                    _default = new Config();
+                    Toml.WriteFile(_default, ConfigFile);
+
+                    Console.WriteLine("A new config file has been created.");
+                    Console.WriteLine("This program uses a TOML config file, any text editor should be able to edit it.");
+                    Console.WriteLine("Press ESC to quit and edit the config or press any other key to continue with the default config.");
+
+                    if(Console.ReadKey().Key == ConsoleKey.Escape)
+                        Environment.Exit(0);
+
+                    Console.WriteLine();
+                }
+            }
+        }
+
+        [TomlMember, TomlComment("Search this folder for cards to organize. Arguments override this setting.")]
+        public string TargetFolder { get; set; } = "";
+
+        [TomlMember, TomlComment("Seach target folder subfolders for cards. Arguments override this setting.")]
+        public bool SearchSubfolders { get; set; } = false;
 
         [TomlMember, TomlComment("Use a common output folder for all the games. If this setting is true all the other folders are ignored.")]
         public bool UseCommonFolder { get; set; } = true;
 
         [TomlMember, TomlComment("The folder used if UseCommonFolder is true.")]
-        public string CommonFolder { get; set; } = DefaultFolder;
+        public string CommonFolderPath { get; set; } = DefaultFolder;
+
+        [TomlMember, TomlComment("Use current working directory for relative paths.")]
+        public bool UseWorkingDir { get; set; } = false;
 
         [TomlMember, TomlComment("Koikatu folders")]
         public string KoikatuFemaleFolder { get; set; } = "";

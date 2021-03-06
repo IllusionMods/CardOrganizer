@@ -14,7 +14,7 @@ namespace CardOrganizer
             return new TokenData
             {
                 Token = token,
-                GetFolder = (fileString, startIndex) => Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(folder) ? Path.Combine(Config.Default.CommonFolder, gameCategory, cardCategory) : folder
+                GetFolder = (fileString, startIndex) => Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(folder) ? Path.Combine(Config.Default.CommonFolderPath, gameCategory, cardCategory) : folder
             };
         }
 
@@ -31,7 +31,7 @@ namespace CardOrganizer
                     var sex = BitConverter.GetBytes(sexChar)[0];
 
                     var useCommon = Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(femaleFolder) || string.IsNullOrWhiteSpace(maleFolder);
-                    return useCommon ? Path.Combine(Config.Default.CommonFolder, gameCategory, sex == 0 ? CardConstants.MaleCategory : CardConstants.FemaleCategory) : sex == 0 ? maleFolder : femaleFolder;
+                    return useCommon ? Path.Combine(Config.Default.CommonFolderPath, gameCategory, sex == 0 ? CardConstants.MaleCategory : CardConstants.FemaleCategory) : sex == 0 ? maleFolder : femaleFolder;
                 }
             };
         }
