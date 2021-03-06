@@ -7,7 +7,7 @@ using System.Text;
 
 namespace CardOrganizer
 {
-    internal class Program
+    internal static class Program
     {
         private static void Main(string[] args)
         {
@@ -17,24 +17,28 @@ namespace CardOrganizer
                 Exit();
             };
 
-            Parser.Default.ParseArguments<Arguments>(args).WithParsed(RunWithOptions);
+            Config.Init();
+            Parser.Default.ParseArguments<Arguments>(args).WithParsed(RunWithOptions).WithNotParsed(x => Exit());
         }
 
         private static void RunWithOptions(Arguments args)
         {
-            if(!Directory.Exists(args.TargetFolder))
+            var targetFolder = string.IsNullOrWhiteSpace(args.TargetFolder) ? Config.Default.TargetFolder : args.TargetFolder;
+            var searchSub = args.SearchSubfolders ?? Config.Default.SearchSubfolders;
+            
+            if(!Directory.Exists(targetFolder))
             {
                 Console.WriteLine("Target folder does not exist");
                 Exit();
             }
 
-            Console.WriteLine($"Organizing cards found in the specified folder. ({args.TargetFolder})");
-            Console.WriteLine($"Subfolders will be {(args.SearchSubfolders ? "searched as well" : "ignored")}.");
+            Console.WriteLine($"Organizing cards found in the specified folder. ({targetFolder})");
+            Console.WriteLine($"Subfolders will be {(searchSub ? "searched as well" : "ignored")}.");
             if(args.TestRun) Console.WriteLine("No files will be moved because test mode is enabled.");
             Console.WriteLine();
 
-            var searchOption = args.SearchSubfolders ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            var pngFiles = Directory.EnumerateFiles(args.TargetFolder, "*", searchOption).Where(x => x.EndsWith(".png", StringComparison.OrdinalIgnoreCase)).ToList();
+            var searchOption = searchSub ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            var pngFiles = Directory.EnumerateFiles(targetFolder, "*", searchOption).Where(x => x.EndsWith(".png", StringComparison.OrdinalIgnoreCase)).ToList();
             var filesToMove = new List<Tuple<string, string>>();
 
             if(pngFiles.Count > 0)
@@ -42,14 +46,14 @@ namespace CardOrganizer
                 foreach(var filepath in pngFiles)
                 {
                     var fileString = File.ReadAllText(filepath, Encoding.UTF8);
-                    var tokenData = TokenData.CardData.Find(fileString).LastOrDefault(); // Last has to be taken because scene token is last
+                    var tokenData = TokenData.CardData.Find(fileString).LastOrDefault(); // Last has to be taken because scene token is last, reverse read order?
 
                     if(tokenData != null)
                     {
                         var destination = Path.Combine(tokenData.Item1.GetFolder(fileString, tokenData.Item2), Path.GetFileName(filepath));
 
                         if(!IsFullPath(destination))
-                            destination = Path.Combine(args.TargetFolder, destination);
+                            destination = Path.Combine(Config.Default.UseWorkingDir ? Directory.GetCurrentDirectory() : targetFolder, destination);
 
                         filesToMove.Add(Tuple.Create(filepath, destination));
                         Console.WriteLine($"{Path.GetFileName(filepath)} = {tokenData.Item1.Token}");

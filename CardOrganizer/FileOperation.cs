@@ -7,7 +7,7 @@ namespace CardOrganizer
 {
     public static class FileOperation
     {
-        public static bool Move(IEnumerable<Tuple<string, string>> files)
+        public static bool Move(IList<Tuple<string, string>> files)
         {
             var sh = CreateBasicStruct();
             sh.wFunc = FO_Func.MOVE;
