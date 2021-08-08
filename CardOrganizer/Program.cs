@@ -73,24 +73,25 @@ namespace CardOrganizer
                             var destInfo = new FileInfo(dest);
                             var srcInfo = new FileInfo(source);
                             
-                            if(destInfo.Exists)
+                            if(destInfo.Exists && srcInfo.Name != destInfo.Name && srcInfo.Length != destInfo.Length)
                             {
                                 Console.WriteLine();
                                 Console.WriteLine($"{srcInfo.Name} | {BytesToString(srcInfo.Length)} | {srcInfo.LastWriteTime}");
                                 Console.WriteLine($"{destInfo.Name} | {BytesToString(destInfo.Length)} | {destInfo.LastWriteTime}");
                                 Console.WriteLine("Overwrite file? (y/n)");
-                                var line = Console.ReadLine();
-                                if(line is "y" or "yes")
-                                    Copy(true);
+                                if(Console.ReadLine() is "y" or "yes")
+                                    Move(true);
+                            }
+                            else
+                            {
+                                Move(false);
                             }
 
-                            Copy(false);
-
-                            void Copy(bool overwrite)
+                            void Move(bool overwrite)
                             {
                                 Console.WriteLine($"{source} -> {dest}");
                                 destInfo.Directory.Create();
-                                srcInfo.CopyTo(dest, overwrite);
+                                srcInfo.MoveTo(dest, overwrite);
                             }
                         }
                     }
