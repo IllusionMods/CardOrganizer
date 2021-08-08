@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace CardOrganizer
 {
-    public static class FileOperation
+    public class WinAPI
     {
         public static bool Move(IList<Tuple<string, string>> files)
         {
@@ -16,10 +16,10 @@ namespace CardOrganizer
             sh.pTo = NullTerminate(files.Select(x => x.Item2));
             return SHFileOperation(ref sh) == 0;
         }
-
+        
         private static SHFILEOPSTRUCT CreateBasicStruct()
         {
-            return new SHFILEOPSTRUCT
+            return new()
             {
                 hwnd = IntPtr.Zero,
                 fAnyOperationsAborted = false,

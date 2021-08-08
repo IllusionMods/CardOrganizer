@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CardOrganizer
@@ -57,7 +58,20 @@ namespace CardOrganizer
                 }
 
                 if(!testRun && filesToMove.Count > 0)
-                    FileOperation.Move(filesToMove);
+                {
+                    if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    {
+                        WinAPI.Move(filesToMove);
+                    }
+                    else
+                    {
+                        foreach(var (source, dest) in filesToMove)
+                        {
+                            new FileInfo(dest).Directory.Create();
+                            File.Move(source, dest, false); // TODO: handle overwriting on linux
+                        }
+                    }
+                }
             }
 
             if(filesToMove.Count == 0)
