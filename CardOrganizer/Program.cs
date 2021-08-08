@@ -61,7 +61,7 @@ namespace CardOrganizer
                 {
                     if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        WinAPI.Move(filesToMove);
+                        WinAPI.MoveFiles(filesToMove);
                     }
                     else
                     {

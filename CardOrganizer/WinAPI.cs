@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace CardOrganizer
 {
-    public class WinAPI
+    public static class WinAPI
     {
-        public static bool Move(IList<Tuple<string, string>> files)
+        public static bool MoveFiles(IList<Tuple<string, string>> files)
         {
             var sh = CreateBasicStruct();
             sh.wFunc = FO_Func.MOVE;
