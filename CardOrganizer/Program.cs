@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -11,11 +12,13 @@ namespace CardOrganizer
     {
         private static void Main(string[] args)
         {
+#if DEBUG
             AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
             {
                 Console.WriteLine(e.ExceptionObject);
                 Exit();
             };
+#endif
 
             Config.Init();
 
@@ -67,8 +70,28 @@ namespace CardOrganizer
                     {
                         foreach(var (source, dest) in filesToMove)
                         {
-                            new FileInfo(dest).Directory.Create();
-                            File.Move(source, dest, false); // TODO: handle overwriting on linux
+                            var destInfo = new FileInfo(dest);
+                            var srcInfo = new FileInfo(source);
+                            
+                            if(destInfo.Exists)
+                            {
+                                Console.WriteLine();
+                                Console.WriteLine($"{srcInfo.Name} | {BytesToString(srcInfo.Length)} | {srcInfo.LastWriteTime}");
+                                Console.WriteLine($"{destInfo.Name} | {BytesToString(destInfo.Length)} | {destInfo.LastWriteTime}");
+                                Console.WriteLine("Overwrite file? (y/n)");
+                                var line = Console.ReadLine();
+                                if(line is "y" or "yes")
+                                    Copy(true);
+                            }
+
+                            Copy(false);
+
+                            void Copy(bool overwrite)
+                            {
+                                Console.WriteLine($"{source} -> {dest}");
+                                destInfo.Directory.Create();
+                                srcInfo.CopyTo(dest, overwrite);
+                            }
                         }
                     }
                 }
@@ -94,6 +117,17 @@ namespace CardOrganizer
                 && path.IndexOfAny(Path.GetInvalidPathChars().ToArray()) == -1
                 && Path.IsPathRooted(path)
                 && !Path.GetPathRoot(path).Equals(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal);
+        }
+        
+        private static string BytesToString(long byteCount)
+        {
+            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
+            if (byteCount == 0)
+                return "0" + suf[0];
+            long bytes = Math.Abs(byteCount);
+            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
+            return (Math.Sign(byteCount) * num).ToString(CultureInfo.InvariantCulture) + suf[place];
         }
     }
 }
