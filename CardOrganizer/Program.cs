@@ -1,5 +1,4 @@
-﻿using CommandLine;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,13 +17,10 @@ namespace CardOrganizer
             };
 
             Config.Init();
-            Parser.Default.ParseArguments<Arguments>(args).WithParsed(RunWithOptions).WithNotParsed(x => Exit());
-        }
 
-        private static void RunWithOptions(Arguments args)
-        {
-            var targetFolder = string.IsNullOrWhiteSpace(args.TargetFolder) ? Config.Default.TargetFolder : args.TargetFolder;
-            var searchSub = args.SearchSubfolders ?? Config.Default.SearchSubfolders;
+            var testRun = args.Length >= 1 && args[0] == "--testrun";
+            var targetFolder = Config.Default.TargetFolder;
+            var searchSub = Config.Default.SearchSubfolders;
             
             if(!Directory.Exists(targetFolder))
             {
@@ -34,7 +30,7 @@ namespace CardOrganizer
 
             Console.WriteLine($"Organizing cards found in the specified folder. ({targetFolder})");
             Console.WriteLine($"Subfolders will be {(searchSub ? "searched as well" : "ignored")}.");
-            if(args.TestRun) Console.WriteLine("No files will be moved because test mode is enabled.");
+            if(testRun) Console.WriteLine("No files will be moved because test mode is enabled.");
             Console.WriteLine();
 
             var searchOption = searchSub ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
@@ -46,7 +42,7 @@ namespace CardOrganizer
                 foreach(var filepath in pngFiles)
                 {
                     var fileString = File.ReadAllText(filepath, Encoding.UTF8);
-                    var tokenData = TokenData.CardData.Find(fileString).LastOrDefault(); // Last has to be taken because scene token is last, reverse read order?
+                    var tokenData = TokenData.CardData.Find(fileString).LastOrDefault(); // TODO: last has to be taken because scene token is last, reverse read order?
 
                     if(tokenData != null)
                     {
@@ -60,7 +56,7 @@ namespace CardOrganizer
                     }
                 }
 
-                if(!args.TestRun && filesToMove.Count > 0)
+                if(!testRun && filesToMove.Count > 0)
                     FileOperation.Move(filesToMove);
             }
 

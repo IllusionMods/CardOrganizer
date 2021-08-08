@@ -44,13 +44,13 @@ namespace CardOrganizer
             }
         }
 
-        [TomlMember, TomlComment("Search this folder for cards to organize. Arguments override this setting.")]
+        [TomlMember, TomlComment("Search this folder for cards to organize.")]
         public string TargetFolder { get; set; } = "";
 
-        [TomlMember, TomlComment("Seach target folder subfolders for cards. Arguments override this setting.")]
+        [TomlMember, TomlComment("Seach target folder subfolders for cards.")]
         public bool SearchSubfolders { get; set; } = false;
 
-        [TomlMember, TomlComment("Use a common output folder for all the games. If this setting is true all the other folders are ignored.")]
+        [TomlMember, TomlComment("Use a common output folder for all the games. If true all other folders are ignored.")]
         public bool UseCommonFolder { get; set; } = true;
 
         [TomlMember, TomlComment("The folder used if UseCommonFolder is true.")]
