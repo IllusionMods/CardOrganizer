@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,13 +13,14 @@ namespace CardOrganizer
     {
         private static void Main(string[] args)
         {
-#if DEBUG
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+            if(!Debugger.IsAttached)
             {
-                Console.WriteLine(e.ExceptionObject);
-                Exit();
-            };
-#endif
+                AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+                {
+                    Console.WriteLine(e.ExceptionObject);
+                    Exit();
+                };
+            }
 
             Config.Init();
 
