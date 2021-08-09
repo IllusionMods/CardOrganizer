@@ -70,11 +70,15 @@ namespace CardOrganizer
                     {
                         foreach(var (source, dest) in filesToMove)
                         {
-                            var destInfo = new FileInfo(dest);
                             var srcInfo = new FileInfo(source);
+                            var destInfo = new FileInfo(dest);
                             
-                            if(destInfo.Exists && srcInfo.Name != destInfo.Name && srcInfo.Length != destInfo.Length)
+                            if(destInfo.Exists)
                             {
+                                // skip identical files
+                                if(srcInfo.Name == destInfo.Name && srcInfo.Length == destInfo.Length)
+                                    continue;
+                                
                                 Console.WriteLine();
                                 Console.WriteLine($"{srcInfo.Name} | {BytesToString(srcInfo.Length)} | {srcInfo.LastWriteTime}");
                                 Console.WriteLine($"{destInfo.Name} | {BytesToString(destInfo.Length)} | {destInfo.LastWriteTime}");
