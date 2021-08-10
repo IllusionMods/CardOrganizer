@@ -1,6 +1,6 @@
 ﻿namespace CardOrganizer
 {
-    internal static class CardConstants
+    public static class CardConstants
     {
         public const string KoikatuCategory = "KK";
         public const string PlayHomeCategory = "PH";

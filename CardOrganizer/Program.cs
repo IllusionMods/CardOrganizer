@@ -6,27 +6,35 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using CommandLine;
 
 namespace CardOrganizer
 {
-    internal static class Program
+    public static class Program
     {
         private static void Main(string[] args)
         {
             if(!Debugger.IsAttached)
             {
-                AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+                AppDomain.CurrentDomain.UnhandledException += (_, e) =>
                 {
                     Console.WriteLine(e.ExceptionObject);
                     Exit();
                 };
             }
 
-            Config.Init();
+            Parser.Default.ParseArguments<Arguments>(args).WithParsed(RunWithOptions).WithNotParsed(x => Exit());
+        }
 
-            var testRun = args.Length >= 1 && args[0] == "--testrun";
-            var targetFolder = Config.Default.TargetFolder;
-            var searchSub = Config.Default.SearchSubfolders;
+        private static void RunWithOptions(Arguments args)
+        {
+            Config.Init();
+            
+            if(args.OpenConfig)
+                Config.Default.ShellOpen();
+
+            var targetFolder = string.IsNullOrWhiteSpace(args.TargetFolder) ? Config.Default.TargetFolder : args.TargetFolder;
+            var searchSub = args.SearchSubfolders ?? Config.Default.SearchSubfolders;
             
             if(!Directory.Exists(targetFolder))
             {
@@ -36,7 +44,7 @@ namespace CardOrganizer
 
             Console.WriteLine($"Organizing cards found in the specified folder. ({targetFolder})");
             Console.WriteLine($"Subfolders will be {(searchSub ? "searched as well" : "ignored")}.");
-            if(testRun) Console.WriteLine("No files will be moved because test mode is enabled.");
+            if(args.TestRun) Console.WriteLine("No files will be moved because test mode is enabled.");
             Console.WriteLine();
 
             var searchOption = searchSub ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
@@ -48,21 +56,22 @@ namespace CardOrganizer
                 foreach(var filepath in pngFiles)
                 {
                     var fileString = File.ReadAllText(filepath, Encoding.UTF8);
-                    var tokenData = TokenData.CardData.Find(fileString).LastOrDefault(); // TODO: last has to be taken because scene token is last, reverse read order?
+                    var tokenSearch = TokenData.CardData.Find(fileString).LastOrDefault(); // TODO: last has to be taken because scene token is last, reverse read order?
 
-                    if(tokenData != null)
+                    if(tokenSearch != null)
                     {
-                        var destination = Path.Combine(tokenData.Item1.GetFolder(fileString, tokenData.Item2), Path.GetFileName(filepath));
+                        var (tokenData, startIndex) = tokenSearch;
+                        var destination = Path.Combine(tokenData.GetFolder(fileString, startIndex), Path.GetFileName(filepath));
 
                         if(!IsFullPath(destination))
                             destination = Path.Combine(Config.Default.UseWorkingDir ? Directory.GetCurrentDirectory() : targetFolder, destination);
 
                         filesToMove.Add(Tuple.Create(filepath, destination));
-                        Console.WriteLine($"{Path.GetFileName(filepath)} = {tokenData.Item1.Token}");
+                        Console.WriteLine($"{Path.GetFileName(filepath)} = {tokenData.Token}");
                     }
                 }
 
-                if(!testRun && filesToMove.Count > 0)
+                if(!args.TestRun && filesToMove.Count > 0)
                 {
                     if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
@@ -111,10 +120,14 @@ namespace CardOrganizer
             Exit();
         }
 
-        private static void Exit()
+        public static void Exit()
         {
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
+            }
+            
             Environment.Exit(0);
         }
 

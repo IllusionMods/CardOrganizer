@@ -14,7 +14,7 @@ namespace CardOrganizer
             return new TokenData
             {
                 Token = token,
-                GetFolder = (fileString, startIndex) => Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(folder) ? Path.Combine(Config.Default.CommonFolderPath, gameCategory, cardCategory) : folder
+                GetFolder = (_, _) => Config.Default.UseCommonFolder || string.IsNullOrWhiteSpace(folder) ? Path.Combine(Config.Default.CommonFolderPath, gameCategory, cardCategory) : folder
             };
         }
 
@@ -25,7 +25,7 @@ namespace CardOrganizer
                 Token = token,
                 GetFolder = (fileString, startIndex) =>
                 {
-                    var substring = fileString.Substring(startIndex);
+                    var substring = fileString.Substring(startIndex); // only check for sex token starting from index
                     var index = SexData.Find(substring).First().Item2;
                     var sexChar = substring[index + 1];
                     var sex = BitConverter.GetBytes(sexChar)[0];
