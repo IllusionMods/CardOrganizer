@@ -1,13 +1,14 @@
 ﻿using Nett;
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace CardOrganizer
 {
-    internal class Config
+    public class Config
     {
-        private const string ConfigFile = "config.toml";
-        private const string DefaultFolder = "cardorganizer";
+        private const string CONFIG_FILENAME = "cardorganizer.toml";
+        private const string DEFAULT_TARGET_DIR = "cardorganizer";
 
         private static Config _default;
         public static Config Default
@@ -23,38 +24,65 @@ namespace CardOrganizer
         {
             if(_default == null)
             {
-                if(File.Exists(ConfigFile))
+                if(File.Exists(CONFIG_FILENAME))
                 {
-                    _default = Toml.ReadFile<Config>(ConfigFile);
+                    _default = Toml.ReadFile<Config>(CONFIG_FILENAME);
+                    _default.ConfigPath = CONFIG_FILENAME;
                 }
                 else
                 {
-                    _default = new Config();
-                    Toml.WriteFile(_default, ConfigFile);
+                    var configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), CONFIG_FILENAME);
+                    
+                    if(File.Exists(configPath))
+                    {
+                        _default = Toml.ReadFile<Config>(configPath);
+                        _default.ConfigPath = configPath;
+                    }
+                    else
+                    {
+                        _default = new Config();
+                        Toml.WriteFile(_default, configPath);
+                        _default.ConfigPath = configPath;
 
-                    Console.WriteLine("A new config file has been created.");
-                    Console.WriteLine("This program uses a TOML config file, any text editor should be able to edit it.");
-                    Console.WriteLine("Press ESC to quit and edit the config or press any other key to continue with the default config.");
-
-                    if(Console.ReadKey().Key == ConsoleKey.Escape)
-                        Environment.Exit(0);
-
-                    Console.WriteLine();
+                        Console.WriteLine("A new config file has been created.");
+                        Console.WriteLine("This program uses a TOML config file, any text editor should be able to edit it.");
+                        Console.WriteLine("Open config file in default text editor? (y/n)");
+                        if(Console.ReadLine() is "y" or "yes")
+                            _default.ShellOpen();
+                        
+                        Program.Exit();
+                    }
                 }
             }
         }
 
-        [TomlMember, TomlComment("Search this folder for cards to organize.")]
+        public void ShellOpen()
+        {
+            new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    UseShellExecute = true,
+                    FileName = ConfigPath
+                }
+            }.Start();
+            
+            Program.Exit();
+        }
+
+        public string ConfigPath;
+
+        [TomlMember, TomlComment("Search this folder for cards to organize. Arguments override this setting.")]
         public string TargetFolder { get; set; } = "";
 
-        [TomlMember, TomlComment("Seach target folder subfolders for cards.")]
+        [TomlMember, TomlComment("Seach target folder subfolders for cards. Arguments override this setting.")]
         public bool SearchSubfolders { get; set; } = false;
 
         [TomlMember, TomlComment("Use a common output folder for all the games. If true all other folders are ignored.")]
         public bool UseCommonFolder { get; set; } = true;
 
         [TomlMember, TomlComment("The folder used if UseCommonFolder is true.")]
-        public string CommonFolderPath { get; set; } = DefaultFolder;
+        public string CommonFolderPath { get; set; } = DEFAULT_TARGET_DIR;
 
         [TomlMember, TomlComment("Use current working directory for relative paths.")]
         public bool UseWorkingDir { get; set; } = false;
