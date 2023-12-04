@@ -37,6 +37,23 @@ def create_trie():
     trie.make_automaton()
     return trie
 
+def get_card_dir(trie, data):
+    game_name, pattern_path, sex = "", "", -1
+    for end_index, value in trie.iter(data):
+        if value == "sex":
+            if sex == -1:
+                sex_temp = int.from_bytes(str.encode(data[end_index+1]))
+                if sex_temp in {0, 1}:
+                    sex = sex_temp
+        else:
+            game_name, pattern_path = value
+
+    if pattern_path == "chara":
+        if sex == 0: pattern_path = "male"
+        elif sex == 1: pattern_path = "female"
+
+    return os.path.join(game_name, pattern_path)
+
 if __name__ == "__main__":
     args = parse_args()
     trie = create_trie()
@@ -53,29 +70,13 @@ if __name__ == "__main__":
             with open(filepath, 'r', errors="replace") as file:
                 data = file.read()
 
-            game_name = ""
-            pattern_path = ""
-            sex = -1
-            for end_index, value in trie.iter(data):
-                if value == "sex":
-                    if sex == -1:
-                        sex_temp = int.from_bytes(str.encode(data[end_index+1]))
-                        if sex_temp in {0, 1}:
-                            sex = sex_temp
-                else:
-                    game_name, pattern_path = value
-
-            if game_name != "":
-                if pattern_path == "chara":
-                    if sex == 0: pattern_path = "male"
-                    elif sex == 1: pattern_path = "female"
-                        
-                relative_path = os.path.join(game_name, pattern_path)
-                destpath = os.path.join(args.output_dir, relative_path, filename)
+            relative_dir = get_card_dir(trie, data)
+            if relative_dir != "":
+                destpath = os.path.join(args.output_dir, relative_dir, filename)
                 if os.path.exists(destpath):
                     print(f"'{filename}' exists in destination already")
                 else:
-                    print(f"'{filename}' -> '{relative_path}'")
+                    print(f"'{filename}' -> '{relative_dir}'")
                     if not args.testrun:
                         os.makedirs(os.path.dirname(destpath), exist_ok=True)
                         shutil.move(filepath, destpath)
