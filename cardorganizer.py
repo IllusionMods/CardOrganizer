@@ -1,8 +1,11 @@
 #!/bin/python
 
-# TODO
-#if output detected as a game folder move files to userdata in correct folders
-#cards for unspecified games wont be moved
+#TODO
+#if output detected as a game folder move files to userdata in correct folders, cards for unspecified games wont be moved
+#skip PNG segment
+#overwriting prompt
+#dont read cards from output dir
+#timeline sorting
 
 import os
 import shutil
@@ -12,11 +15,11 @@ import ahocorasick
 games = {
     "KK"   : [("chara", "【KoiKatuChara】"), ("chara", "【KoiKatuCharaS】"), ("chara", "【KoiKatuCharaSP】"), ("outfit", "【KoiKatuClothes】"), ("studio", "【KStudio】")],
     "KKS"  : [("chara", "【KoiKatuCharaSun】")],
-    "AI"   : [("chara", "【AIS_Chara】"), ("outfit", "AIS_Clothes"), ("studio", "StudioNEOV2"), ("housing", "【AIS_Housing】")],
+    "AI"   : [("chara", "【AIS_Chara】"), ("outfit", "【AIS_Clothes】"), ("studio", "【StudioNEOV2】"), ("housing", "【AIS_Housing】")],
     "EC"   : [("chara", "EroMakeChara"), ("hscene", "EroMakeHScene"), ("map", "EroMakeMap"), ("pose", "EroMakePose")],
-    "HS"   : [("female", "HoneySelectCharaFemale"), ("male", "HoneySelectCharaMale"), ("studio", "-neo-")],
-    "PH"   : [("female", "PlayHome_Female"), ("male", "PlayHome_Male"), ("studio", "PHStudio")],
-    "SBPR" : [("female", "PremiumResortCharaFemale"), ("male", "PremiumResortCharaMale")],
+    "HS"   : [("female", "【HoneySelectCharaFemale】"), ("male", "【HoneySelectCharaMale】"), ("studio", "【-neo-】")],
+    "PH"   : [("female", "【PlayHome_Female】"), ("male", "【PlayHome_Male】"), ("studio", "【PHStudio】")],
+    "SBPR" : [("female", "【PremiumResortCharaFemale】"), ("male", "【PremiumResortCharaMale】")],
     "HC"   : [("chara", "【HCChara】")],
 }
 
