@@ -21,6 +21,8 @@ games = {
     "PH"   : [("female", "【PlayHome_Female】"), ("male", "【PlayHome_Male】"), ("studio", "【PHStudio】")],
     "SBPR" : [("female", "【PremiumResortCharaFemale】"), ("male", "【PremiumResortCharaMale】")],
     "HC"   : [("chara", "【HCChara】")],
+    "AA2"  : [("chara", "y�G�f�B�b�g�z"), ("studio", "\x00SCENE\x00")],
+    "RG"   : [("chara", "【RG_Chara】")]#, ("studio", "【RoomStudio】")], # studio token not last in RG
 }
 
 def parse_args():
