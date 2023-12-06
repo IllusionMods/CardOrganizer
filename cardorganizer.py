@@ -3,11 +3,11 @@
 #TODO
 #if output detected as a game folder move files to userdata in correct folders, cards for unspecified games wont be moved
 #skip PNG segment
-#overwriting prompt
 #dont read cards from output dir
 #timeline sorting
 
 import os
+import re
 import shutil
 import argparse
 import ahocorasick
@@ -59,6 +59,27 @@ def get_card_dir(trie, data):
 
     return os.path.join(game_name, pattern_path)
 
+def get_unused_path(dirpath, filename):
+    path = os.path.join(dirpath, filename)
+    if not os.path.exists(path):
+        return path
+
+    index = 1
+    base, ext = os.path.splitext(filename)
+    match = re.match("^(.+)\(([0-9])\)$", base)
+    if match != None:
+        new_base, new_index = match.groups()
+        filename = f"{new_base.strip()}{ext}"
+        index = int(new_index)
+
+    while True:
+        base, ext = os.path.splitext(filename)
+        path = os.path.join(dirpath, f"{base} ({index}){ext}")
+        index += 1
+        if not os.path.exists(path): break
+
+    return path
+
 if __name__ == "__main__":
     args = parse_args()
     trie = create_trie()
@@ -77,14 +98,12 @@ if __name__ == "__main__":
 
             relative_dir = get_card_dir(trie, data)
             if relative_dir != "":
-                destpath = os.path.join(args.output_dir, relative_dir, filename)
-                if os.path.exists(destpath):
-                    print(f"'{filename}' exists in destination already")
-                else:
-                    print(f"'{filename}' -> '{relative_dir}'")
-                    if not args.testrun:
-                        os.makedirs(os.path.dirname(destpath), exist_ok=True)
-                        shutil.move(filepath, destpath)
+                dest_dir = os.path.join(args.output_dir, relative_dir)
+                destpath = get_unused_path(dest_dir, filename)
+                print(f"'{filename}' -> '{os.path.join(relative_dir, os.path.basename(destpath))}'")
+                if not args.testrun:
+                    os.makedirs(dest_dir, exist_ok=True)
+                    shutil.copy(filepath, destpath)
 
         if not args.subdir:
             break
