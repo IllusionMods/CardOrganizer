@@ -3,7 +3,6 @@
 #TODO
 #if output detected as a game folder move files to userdata in correct folders, cards for unspecified games wont be moved
 #skip PNG segment
-#dont read cards from output dir
 #timeline sorting
 #when same name check if file is identical
 
@@ -32,7 +31,10 @@ def parse_args():
     parser.add_argument("output_dir", help="The directory where cards will be output.")
     parser.add_argument("--subdir", action="store_true", help="Seach subdirectories for cards as well.")
     parser.add_argument("--testrun", action="store_true", help="Test the program without moving files.")
-    return parser.parse_args()
+    args = parser.parse_args()
+    args.target_dir = os.path.normpath(args.target_dir)
+    args.output_dir = os.path.normpath(args.output_dir)
+    return args
 
 def create_trie():
     trie = ahocorasick.Automaton()
@@ -87,8 +89,13 @@ def main():
 
     if args.testrun:
         print("Test run, no files will be moved")
+
+    full_output_dir = os.path.join(os.getcwd(), args.output_dir)
     
     for dirpath, _, filenames in os.walk(args.target_dir):
+        if dirpath.startswith(full_output_dir):
+            continue
+
         for filename in filenames:
             if not filename.endswith(".png"):
                 continue
