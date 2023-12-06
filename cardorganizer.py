@@ -2,7 +2,6 @@
 
 #TODO
 #if output detected as a game folder move files to userdata in correct folders, cards for unspecified games wont be moved
-#skip PNG segment
 #timeline sorting
 #when same name check if file is identical
 
@@ -46,8 +45,11 @@ def create_trie():
     return trie
 
 def get_card_dir(trie, data):
+    png_end_index = data.find("IEND")
+    if png_end_index == -1: return ""
+
     game_name, pattern_path, sex = "", "", ""
-    for end_index, value in trie.iter(data):
+    for end_index, value in trie.iter(data, png_end_index):
         if value == "sex":
             if sex == "":
                 temp = data[end_index+1]
@@ -91,7 +93,7 @@ def main():
         print("Test run, no files will be moved")
 
     full_output_dir = os.path.join(os.getcwd(), args.output_dir)
-    
+
     for dirpath, _, filenames in os.walk(args.target_dir):
         if dirpath.startswith(full_output_dir):
             continue
