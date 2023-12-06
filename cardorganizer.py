@@ -44,19 +44,19 @@ def create_trie():
     return trie
 
 def get_card_dir(trie, data):
-    game_name, pattern_path, sex = "", "", -1
+    game_name, pattern_path, sex = "", "", ""
     for end_index, value in trie.iter(data):
         if value == "sex":
-            if sex == -1:
-                sex_temp = int.from_bytes(str.encode(data[end_index+1])) #use char directly
-                if sex_temp in {0, 1}:
-                    sex = sex_temp
+            if sex == "":
+                temp = data[end_index+1]
+                if temp in {"\x00", "\x01"}:
+                    sex = temp
         else:
             game_name, pattern_path = value
 
     if pattern_path == "chara":
-        if sex == 0: pattern_path = "male"
-        elif sex == 1: pattern_path = "female"
+        if sex == "\x00": pattern_path = "male"
+        elif sex == "\x01": pattern_path = "female"
 
     return os.path.join(game_name, pattern_path)
 
