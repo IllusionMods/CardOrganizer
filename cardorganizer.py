@@ -81,7 +81,7 @@ def get_unused_path(dirpath, filename):
 
     return path
 
-if __name__ == "__main__":
+def main():
     args = parse_args()
     trie = create_trie()
 
@@ -108,3 +108,6 @@ if __name__ == "__main__":
 
         if not args.subdir:
             break
+
+if __name__ == "__main__":
+    main()
