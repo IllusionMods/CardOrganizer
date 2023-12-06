@@ -5,6 +5,7 @@
 #skip PNG segment
 #dont read cards from output dir
 #timeline sorting
+#when same name check if file is identical
 
 import os
 import re
@@ -28,8 +29,8 @@ games = {
 def parse_args():
     parser = argparse.ArgumentParser(description="Sort illusion cards automatically.")
     parser.add_argument("target_dir", help="The directory to search for cards.")
-    parser.add_argument("output_dir", help="The directory where cards will be output")
-    parser.add_argument("--subdir", action="store_true", help="Seach subfolders for cards as well.")
+    parser.add_argument("output_dir", help="The directory where cards will be output.")
+    parser.add_argument("--subdir", action="store_true", help="Seach subdirectories for cards as well.")
     parser.add_argument("--testrun", action="store_true", help="Test the program without moving files.")
     return parser.parse_args()
 
@@ -47,7 +48,7 @@ def get_card_dir(trie, data):
     for end_index, value in trie.iter(data):
         if value == "sex":
             if sex == -1:
-                sex_temp = int.from_bytes(str.encode(data[end_index+1]))
+                sex_temp = int.from_bytes(str.encode(data[end_index+1])) #use char directly
                 if sex_temp in {0, 1}:
                     sex = sex_temp
         else:
@@ -103,7 +104,7 @@ if __name__ == "__main__":
                 print(f"'{filename}' -> '{os.path.join(relative_dir, os.path.basename(destpath))}'")
                 if not args.testrun:
                     os.makedirs(dest_dir, exist_ok=True)
-                    shutil.copy(filepath, destpath)
+                    shutil.move(filepath, destpath)
 
         if not args.subdir:
             break
