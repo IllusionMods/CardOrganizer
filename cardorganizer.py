@@ -12,16 +12,16 @@ import argparse
 import ahocorasick
 
 games = {
-    "KK"   : [("chara", "【KoiKatuChara】"), ("chara", "【KoiKatuCharaS】"), ("chara", "【KoiKatuCharaSP】"), ("outfit", "【KoiKatuClothes】"), ("studio", "【KStudio】")],
-    "KKS"  : [("chara", "【KoiKatuCharaSun】")],
-    "AI"   : [("chara", "【AIS_Chara】"), ("outfit", "【AIS_Clothes】"), ("studio", "【StudioNEOV2】"), ("housing", "【AIS_Housing】")],
-    "EC"   : [("chara", "EroMakeChara"), ("hscene", "EroMakeHScene"), ("map", "EroMakeMap"), ("pose", "EroMakePose")],
-    "HS"   : [("female", "【HoneySelectCharaFemale】"), ("male", "【HoneySelectCharaMale】"), ("studio", "【-neo-】")],
-    "PH"   : [("female", "【PlayHome_Female】"), ("male", "【PlayHome_Male】"), ("studio", "【PHStudio】")],
-    "SBPR" : [("female", "【PremiumResortCharaFemale】"), ("male", "【PremiumResortCharaMale】")],
-    "HC"   : [("chara", "【HCChara】")],
-    "AA2"  : [("chara", "y�G�f�B�b�g�z"), ("studio", "\x00SCENE\x00")],
-    "RG"   : [("chara", "【RG_Chara】")]#, ("studio", "【RoomStudio】")], # studio token not last in RG
+    "KK"   : [("chara", ["【KoiKatuChara】", "【KoiKatuCharaS】", "【KoiKatuCharaSP】"]), ("outfit", ["【KoiKatuClothes】"]), ("studio", ["【KStudio】"])],
+    "KKS"  : [("chara", ["【KoiKatuCharaSun】"])],
+    "AI"   : [("chara", ["【AIS_Chara】"]), ("outfit", ["【AIS_Clothes】"]), ("studio", ["【StudioNEOV2】"]), ("housing", ["【AIS_Housing】"])],
+    "EC"   : [("chara", ["EroMakeChara"]), ("hscene", ["EroMakeHScene"]), ("map", ["EroMakeMap"]), ("pose", ["EroMakePose"])],
+    "HS"   : [("female", ["【HoneySelectCharaFemale】"]), ("male", ["【HoneySelectCharaMale】"]), ("studio", ["【-neo-】"])],
+    "PH"   : [("female", ["【PlayHome_Female】"]), ("male", ["【PlayHome_Male】"]), ("studio", ["【PHStudio】"])],
+    "SBPR" : [("female", ["【PremiumResortCharaFemale】"]), ("male", ["【PremiumResortCharaMale】"])],
+    "HC"   : [("chara", ["【HCChara】"])],
+    "AA2"  : [("chara", ["y�G�f�B�b�g�z"]), ("studio", ["\x00SCENE\x00"])],
+    "RG"   : [("chara", ["【RG_Chara】"])]#, ("studio", ["【RoomStudio】"])], # studio token not last in RG
 }
 
 def parse_args():
@@ -38,8 +38,9 @@ def parse_args():
 def create_trie():
     trie = ahocorasick.Automaton()
     for game_name, card_info_list in games.items():
-        for pattern_path, pattern in card_info_list:
-            trie.add_word(pattern, (game_name, pattern_path))
+        for pattern_path, patterns in card_info_list:
+            for pattern in patterns:
+                trie.add_word(pattern, (game_name, pattern_path))
     trie.add_word("sex", "sex")
     trie.make_automaton()
     return trie
