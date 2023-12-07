@@ -1,7 +1,6 @@
 #!/bin/python
 
 #TODO
-#if output detected as a game folder move files to userdata in correct folders, cards for unspecified games wont be moved
 #timeline sorting
 #when same name check if file is identical
 
@@ -12,28 +11,33 @@ import argparse
 import ahocorasick
 
 games = {
-    "KK"   : [("chara", ["【KoiKatuChara】", "【KoiKatuCharaS】", "【KoiKatuCharaSP】"]), ("outfit", ["【KoiKatuClothes】"]), ("studio", ["【KStudio】"])],
+    "KK"   : [("chara", ["【KoiKatuChara】", "【KoiKatuCharaS】", "【KoiKatuCharaSP】"]), ("coordinate", ["【KoiKatuClothes】"]), ("scene", ["【KStudio】"])],
     "KKS"  : [("chara", ["【KoiKatuCharaSun】"])],
-    "AI"   : [("chara", ["【AIS_Chara】"]), ("outfit", ["【AIS_Clothes】"]), ("studio", ["【StudioNEOV2】"]), ("housing", ["【AIS_Housing】"])],
+    "AI"   : [("chara", ["【AIS_Chara】"]), ("coordinate", ["【AIS_Clothes】"]), ("scene", ["【StudioNEOV2】"]), ("housing", ["【AIS_Housing】"])],
     "EC"   : [("chara", ["EroMakeChara"]), ("hscene", ["EroMakeHScene"]), ("map", ["EroMakeMap"]), ("pose", ["EroMakePose"])],
-    "HS"   : [("female", ["【HoneySelectCharaFemale】"]), ("male", ["【HoneySelectCharaMale】"]), ("studio", ["【-neo-】"])],
-    "PH"   : [("female", ["【PlayHome_Female】"]), ("male", ["【PlayHome_Male】"]), ("studio", ["【PHStudio】"])],
+    "HS"   : [("female", ["【HoneySelectCharaFemale】"]), ("male", ["【HoneySelectCharaMale】"]), ("scene", ["【-neo-】"])],
+    "PH"   : [("female", ["【PlayHome_Female】"]), ("male", ["【PlayHome_Male】"]), ("scene", ["【PHStudio】"])],
     "SBPR" : [("female", ["【PremiumResortCharaFemale】"]), ("male", ["【PremiumResortCharaMale】"])],
     "HC"   : [("chara", ["【HCChara】"])],
-    "AA2"  : [("chara", ["y�G�f�B�b�g�z"]), ("studio", ["\x00SCENE\x00"])],
-    "RG"   : [("chara", ["【RG_Chara】"])]#, ("studio", ["【RoomStudio】"])], # studio token not last in RG
+    "AA2"  : [("chara", ["y�G�f�B�b�g�z"]), ("scene", ["\x00SCENE\x00"])],
+    "RG"   : [("chara", ["【RG_Chara】"])]#, ("scene", ["【RoomStudio】"])], # scene token not last in RG
 }
+
+sexs = {"\x00" : "male", "\x01" : "female" }
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Sort illusion cards automatically.")
     parser.add_argument("target_dir", help="The directory to search for cards.")
     parser.add_argument("output_dir", help="The directory where cards will be output.")
-    parser.add_argument("--subdir", action="store_true", help="Seach subdirectories for cards as well.")
+    parser.add_argument("--subdir", action="store_true", help="Seach subfolders for cards as well.")
     parser.add_argument("--testrun", action="store_true", help="Test the program without moving files.")
+    parser.add_argument("--userdata", choices=["KK", "KKS"], help=f"Place cards in correct folders inside output_dir that points to UserData.")
     args = parser.parse_args()
     args.target_dir = os.path.normpath(args.target_dir)
     args.output_dir = os.path.normpath(args.output_dir)
     return args
+
 
 def create_trie():
     trie = ahocorasick.Automaton()
@@ -45,7 +49,8 @@ def create_trie():
     trie.make_automaton()
     return trie
 
-def get_card_dir(trie, data):
+
+def get_card_dir(trie, data, userdata):
     png_end_index = data.find("IEND")
     if png_end_index == -1: return ""
 
@@ -54,16 +59,26 @@ def get_card_dir(trie, data):
         if value == "sex":
             if sex == "":
                 temp = data[end_index+1]
-                if temp in {"\x00", "\x01"}:
+                if temp in [*sexs]:
                     sex = temp
         else:
             game_name, pattern_path = value
+    if "" in {game_name, pattern_path}: return ""
 
-    if pattern_path == "chara":
-        if sex == "\x00": pattern_path = "male"
-        elif sex == "\x01": pattern_path = "female"
+    if userdata != None:
+        allowlist = [userdata]
+        if userdata == "KKS": allowlist.append("KK")
+        if game_name not in allowlist: return ""
+        if pattern_path == "chara" and sex != "":
+            pattern_path = os.path.join(pattern_path, sexs[sex])
+        if pattern_path == "scene":
+            pattern_path = os.path.join("studio", pattern_path)
+        return os.path.join(pattern_path, "cardorganizer")
+    else:
+        if pattern_path == "chara" and sex != "":
+            pattern_path = sexs[sex]
+        return os.path.join(game_name, pattern_path)
 
-    return os.path.join(game_name, pattern_path)
 
 def get_unused_path(dirpath, filename):
     path = os.path.join(dirpath, filename)
@@ -86,13 +101,11 @@ def get_unused_path(dirpath, filename):
 
     return path
 
+
 def main():
     args = parse_args()
+    if args.testrun: print("Test run, no files will be moved")
     trie = create_trie()
-
-    if args.testrun:
-        print("Test run, no files will be moved")
-
     full_output_dir = os.path.join(os.getcwd(), args.output_dir)
 
     for dirpath, _, filenames in os.walk(args.target_dir):
@@ -107,7 +120,7 @@ def main():
             with open(filepath, 'r', errors="replace") as file:
                 data = file.read()
 
-            relative_dir = get_card_dir(trie, data)
+            relative_dir = get_card_dir(trie, data, args.userdata)
             if relative_dir != "":
                 dest_dir = os.path.join(args.output_dir, relative_dir)
                 destpath = get_unused_path(dest_dir, filename)
@@ -118,6 +131,7 @@ def main():
 
         if not args.subdir:
             break
+
 
 if __name__ == "__main__":
     main()
