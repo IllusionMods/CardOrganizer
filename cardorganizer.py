@@ -83,7 +83,7 @@ def get_card_dir(trie, data, userdata):
 def get_unused_path(dirpath, filename):
     path = os.path.join(dirpath, filename)
     if not os.path.exists(path):
-        return path
+        return (False, path)
 
     index = 1
     base, ext = os.path.splitext(filename)
@@ -99,7 +99,7 @@ def get_unused_path(dirpath, filename):
         index += 1
         if not os.path.exists(path): break
 
-    return path
+    return (True, path)
 
 
 def main():
@@ -123,8 +123,9 @@ def main():
             relative_dir = get_card_dir(trie, data, args.userdata)
             if relative_dir != "":
                 dest_dir = os.path.join(args.output_dir, relative_dir)
-                destpath = get_unused_path(dest_dir, filename)
-                print(f"'{filename}' -> '{os.path.join(relative_dir, os.path.basename(destpath))}'")
+                changed, destpath = get_unused_path(dest_dir, filename)
+                msg = os.path.join(relative_dir, os.path.basename(destpath)) if changed else relative_dir
+                print(f"'{filename}' -> '{msg}'")
                 if not args.testrun:
                     os.makedirs(dest_dir, exist_ok=True)
                     shutil.move(filepath, destpath)
