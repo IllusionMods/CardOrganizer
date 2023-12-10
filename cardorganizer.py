@@ -30,7 +30,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Sort illusion cards automatically.")
     parser.add_argument("target_dir", help="The directory to search for cards.")
     parser.add_argument("output_dir", help="The directory where cards will be output.")
-    parser.add_argument("--subdir", action="store_true", help="Seach subfolders for cards as well.")
+    parser.add_argument("--recursive", "-r", action="store_true", help="Seach subdirs for cards as well.")
     parser.add_argument("--testrun", action="store_true", help="Test the program without moving files.")
     parser.add_argument("--userdata", choices=["KK", "KKS"], help=f"Place cards in correct folders inside output_dir that points to UserData.")
     args = parser.parse_args()
@@ -130,7 +130,7 @@ def main():
                     os.makedirs(dest_dir, exist_ok=True)
                     shutil.move(filepath, destpath)
 
-        if not args.subdir:
+        if not args.recursive:
             break
 
 
