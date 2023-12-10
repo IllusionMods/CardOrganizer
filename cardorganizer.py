@@ -33,6 +33,7 @@ def parse_args():
     parser.add_argument("--recursive", "-r", action="store_true", help="Seach subdirs for cards as well.")
     parser.add_argument("--testrun", action="store_true", help="Test the program without moving files.")
     parser.add_argument("--userdata", choices=["KK", "KKS"], help=f"Place cards in correct folders inside output_dir that points to UserData.")
+    parser.add_argument("--userdata-subdir", default="cardorganizer", metavar="DIR", help="Specify output subdir inside userdata")
     args = parser.parse_args()
     args.target_dir = os.path.normpath(args.target_dir)
     args.output_dir = os.path.normpath(args.output_dir)
@@ -50,7 +51,7 @@ def create_trie():
     return trie
 
 
-def get_card_dir(trie, data, userdata):
+def get_card_dir(trie, data, args):
     png_end_index = data.find("IEND")
     if png_end_index == -1: return ""
 
@@ -65,15 +66,15 @@ def get_card_dir(trie, data, userdata):
             game_name, pattern_path = value
     if "" in {game_name, pattern_path}: return ""
 
-    if userdata != None:
-        allowlist = [userdata]
-        if userdata == "KKS": allowlist.append("KK")
+    if args.userdata != None:
+        allowlist = [args.userdata]
+        if args.userdata == "KKS": allowlist.append("KK")
         if game_name not in allowlist: return ""
         if pattern_path == "chara" and sex != "":
             pattern_path = os.path.join(pattern_path, sexs[sex])
         if pattern_path == "scene":
             pattern_path = os.path.join("studio", pattern_path)
-        return os.path.join(pattern_path, "cardorganizer")
+        return os.path.join(pattern_path, args.userdata_subdir)
     else:
         if pattern_path == "chara" and sex != "":
             pattern_path = sexs[sex]
@@ -120,7 +121,7 @@ def main():
             with open(filepath, 'r', errors="replace") as file:
                 data = file.read()
 
-            relative_dir = get_card_dir(trie, data, args.userdata)
+            relative_dir = get_card_dir(trie, data, args)
             if relative_dir != "":
                 dest_dir = os.path.join(args.output_dir, relative_dir)
                 changed, destpath = get_unused_path(dest_dir, filename)
