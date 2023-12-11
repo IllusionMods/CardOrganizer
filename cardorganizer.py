@@ -63,7 +63,8 @@ def get_card_dir(trie, data, args):
                 if temp in [*sexs]:
                     sex = temp
         else:
-            game_name, pattern_path = value
+            if pattern_path != "scene":
+                game_name, pattern_path = value
     if "" in {game_name, pattern_path}: return ""
 
     if args.userdata != None:
