@@ -4,14 +4,14 @@
 #timeline sorting
 #when same name check if file is identical
 #copy mode
-#multithreading
 
 import os
 import re
 import shutil
 import argparse
 import ahocorasick
-import multiprocessing
+from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 games = {
     "KK"   : [("chara", ["【KoiKatuChara】", "【KoiKatuCharaS】", "【KoiKatuCharaSP】"]), ("coordinate", ["【KoiKatuClothes】"]), ("scene", ["【KStudio】"])],
@@ -107,7 +107,8 @@ def get_unused_path(dirpath, filename):
     return (True, path)
 
 
-def process_card(args, dirpath, filename, trie):
+def process_card(card_args):
+    args, dirpath, filename, trie = card_args
     filepath = os.path.join(dirpath, filename)
     with open(filepath, 'r', errors="replace") as file:
         data = file.read()
@@ -116,8 +117,8 @@ def process_card(args, dirpath, filename, trie):
     if relative_dir != "":
         dest_dir = os.path.join(args.output_dir, relative_dir)
         changed, destpath = get_unused_path(dest_dir, filename)
-        msg = os.path.join(relative_dir, os.path.basename(destpath)) if changed else relative_dir
-        print(f"'{filename}' -> '{msg}'")
+        #msg = os.path.join(relative_dir, os.path.basename(destpath)) if changed else relative_dir
+        #print(f"'{filename}' -> '{msg}'")
         if not args.testrun:
             os.makedirs(dest_dir, exist_ok=True)
             shutil.move(filepath, destpath)
@@ -129,16 +130,17 @@ def main():
     trie = create_trie()
 
     full_output_dir = os.path.join(os.getcwd(), args.output_dir)
-    cardlist = []
+    worklist = []
     for dirpath, _, filenames in os.walk(args.target_dir):
         if dirpath.startswith(full_output_dir): continue
         for filename in filenames:
             if filename.endswith(".png"):
-                cardlist.append((args, dirpath, filename, trie))
+                worklist.append((args, dirpath, filename, trie))
         if not args.recursive: break
-        
-    with multiprocessing.Pool() as p:
-        p.starmap(process_card, cardlist)
+    
+    #with multiprocessing.Pool() as pool:
+    #    list(tqdm(pool.imap(process_card, worklist), total=len(worklist)))
+    process_map(process_card, worklist, chunksize=1)
 
 
 if __name__ == "__main__":
