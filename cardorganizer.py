@@ -10,6 +10,7 @@ import re
 import shutil
 import argparse
 import ahocorasick
+import multiprocessing
 from tqdm import tqdm
 from tqdm.contrib.concurrent import process_map
 
@@ -33,6 +34,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Sort illusion cards automatically.")
     parser.add_argument("target_dir", help="The directory to search for cards.")
     parser.add_argument("output_dir", help="The directory where cards will be output.")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Print card names instead of a progress bar.")
     parser.add_argument("--recursive", "-r", action="store_true", help="Seach subdirs for cards as well.")
     parser.add_argument("--testrun", action="store_true", help="Test the program without moving files.")
     parser.add_argument("--userdata", choices=["KK", "KKS"], help=f"Place cards in correct folders inside output_dir that points to UserData.")
@@ -117,8 +119,9 @@ def process_card(card_args):
     if relative_dir != "":
         dest_dir = os.path.join(args.output_dir, relative_dir)
         changed, destpath = get_unused_path(dest_dir, filename)
-        #msg = os.path.join(relative_dir, os.path.basename(destpath)) if changed else relative_dir
-        #print(f"'{filename}' -> '{msg}'")
+        if args.verbose:
+            msg = os.path.join(relative_dir, os.path.basename(destpath)) if changed else relative_dir
+            print(f"'{filename}' -> '{msg}'")
         if not args.testrun:
             os.makedirs(dest_dir, exist_ok=True)
             shutil.move(filepath, destpath)
@@ -138,9 +141,11 @@ def main():
                 worklist.append((args, dirpath, filename, trie))
         if not args.recursive: break
     
-    #with multiprocessing.Pool() as pool:
-    #    list(tqdm(pool.imap(process_card, worklist), total=len(worklist)))
-    process_map(process_card, worklist, chunksize=1)
+    if args.verbose:
+        with multiprocessing.Pool() as pool:
+            pool.map(process_card, worklist)
+    else:
+        process_map(process_card, worklist, chunksize=1)
 
 
 if __name__ == "__main__":
