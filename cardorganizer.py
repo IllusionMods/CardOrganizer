@@ -3,6 +3,8 @@
 #TODO
 #timeline sorting
 #when same name check if file is identical
+#copy mode
+#multithreading
 
 import os
 import re
@@ -12,15 +14,15 @@ import ahocorasick
 
 games = {
     "KK"   : [("chara", ["【KoiKatuChara】", "【KoiKatuCharaS】", "【KoiKatuCharaSP】"]), ("coordinate", ["【KoiKatuClothes】"]), ("scene", ["【KStudio】"])],
-    "KKS"  : [("chara", ["【KoiKatuCharaSun】"])],
+    "KKS"  : [("chara", ["【KoiKatuCharaSun】"])], # check if KKS coordinate is different
     "AI"   : [("chara", ["【AIS_Chara】"]), ("coordinate", ["【AIS_Clothes】"]), ("scene", ["【StudioNEOV2】"]), ("housing", ["【AIS_Housing】"])],
-    "EC"   : [("chara", ["EroMakeChara"]), ("hscene", ["EroMakeHScene"]), ("map", ["EroMakeMap"]), ("pose", ["EroMakePose"])],
-    "HS"   : [("female", ["【HoneySelectCharaFemale】"]), ("male", ["【HoneySelectCharaMale】"]), ("scene", ["【-neo-】"])],
-    "PH"   : [("female", ["【PlayHome_Female】"]), ("male", ["【PlayHome_Male】"]), ("scene", ["【PHStudio】"])],
-    "SBPR" : [("female", ["【PremiumResortCharaFemale】"]), ("male", ["【PremiumResortCharaMale】"])],
-    "HC"   : [("chara", ["【HCChara】"])],
+    "EC"   : [("chara", ["EroMakeChara"]), ("hscene", ["EroMakeHScene"]), ("map", ["EroMakeMap"]), ("pose", ["EroMakePose"])], # add EC coordinate
+    "HS"   : [("female", ["【HoneySelectCharaFemale】"]), ("male", ["【HoneySelectCharaMale】"]), ("scene", ["【-neo-】"])], # add HS coordinate
+    "PH"   : [("female", ["【PlayHome_Female】"]), ("male", ["【PlayHome_Male】"]), ("scene", ["【PHStudio】"])], # add PH coordinate
+    "SBPR" : [("female", ["【PremiumResortCharaFemale】"]), ("male", ["【PremiumResortCharaMale】"])], # add SBPR coordinate
+    "HC"   : [("chara", ["【HCChara】"])], # add HC coordinate and scene
     "AA2"  : [("chara", ["y�G�f�B�b�g�z"]), ("scene", ["\x00SCENE\x00"])],
-    "RG"   : [("chara", ["【RG_Chara】"])]#, ("scene", ["【RoomStudio】"])], # scene token not last in RG
+    "RG"   : [("chara", ["【RG_Chara】"]), ("scene", ["【RoomStudio】"])], # add RG coordinate
 }
 
 sexs = {"\x00" : "male", "\x01" : "female" }
