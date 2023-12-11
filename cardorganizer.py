@@ -11,6 +11,7 @@ import re
 import shutil
 import argparse
 import ahocorasick
+import multiprocessing
 
 games = {
     "KK"   : [("chara", ["【KoiKatuChara】", "【KoiKatuCharaS】", "【KoiKatuCharaSP】"]), ("coordinate", ["【KoiKatuClothes】"]), ("scene", ["【KStudio】"])],
@@ -106,36 +107,38 @@ def get_unused_path(dirpath, filename):
     return (True, path)
 
 
+def process_card(args, dirpath, filename, trie):
+    filepath = os.path.join(dirpath, filename)
+    with open(filepath, 'r', errors="replace") as file:
+        data = file.read()
+
+    relative_dir = get_card_dir(trie, data, args)
+    if relative_dir != "":
+        dest_dir = os.path.join(args.output_dir, relative_dir)
+        changed, destpath = get_unused_path(dest_dir, filename)
+        msg = os.path.join(relative_dir, os.path.basename(destpath)) if changed else relative_dir
+        print(f"'{filename}' -> '{msg}'")
+        if not args.testrun:
+            os.makedirs(dest_dir, exist_ok=True)
+            shutil.move(filepath, destpath)
+
+
 def main():
     args = parse_args()
     if args.testrun: print("Test run, no files will be moved")
     trie = create_trie()
+
     full_output_dir = os.path.join(os.getcwd(), args.output_dir)
-
+    cardlist = []
     for dirpath, _, filenames in os.walk(args.target_dir):
-        if dirpath.startswith(full_output_dir):
-            continue
-
+        if dirpath.startswith(full_output_dir): continue
         for filename in filenames:
-            if not filename.endswith(".png"):
-                continue
-
-            filepath = os.path.join(dirpath, filename)
-            with open(filepath, 'r', errors="replace") as file:
-                data = file.read()
-
-            relative_dir = get_card_dir(trie, data, args)
-            if relative_dir != "":
-                dest_dir = os.path.join(args.output_dir, relative_dir)
-                changed, destpath = get_unused_path(dest_dir, filename)
-                msg = os.path.join(relative_dir, os.path.basename(destpath)) if changed else relative_dir
-                print(f"'{filename}' -> '{msg}'")
-                if not args.testrun:
-                    os.makedirs(dest_dir, exist_ok=True)
-                    shutil.move(filepath, destpath)
-
-        if not args.recursive:
-            break
+            if filename.endswith(".png"):
+                cardlist.append((args, dirpath, filename, trie))
+        if not args.recursive: break
+        
+    with multiprocessing.Pool() as p:
+        p.starmap(process_card, cardlist)
 
 
 if __name__ == "__main__":
